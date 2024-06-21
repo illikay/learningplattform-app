@@ -1,29 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import reportWebVitals from './reportWebVitals';
+import App from './App';
 
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>   
+    <App />
+  </React.StrictMode>
+);
 
-const App = () => {
-   const [posts, setPosts] = useState([]);
-   const [data, setData] = useState([]);
-   useEffect(() => {
-  fetch('http://localhost:7634/exam')
-    .then(response => response.json())
-    .then(data => setData(data))
-    .catch(error => console.error(error));
-}, []);
-   
-   return (
-    <div>
-      <ul>
-        {data.map(item => (
-          <li key={item.id}>{item.pruefungsName} , {item.info} , {item.beschreibung} , {item.erstellDatum} , 
-          {item.aenderungsDatum} , {item.anzahlFragen} </li>
-          ))}          
-      </ul>
-    </div>
-  );
-};
-
-
-const root = ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
