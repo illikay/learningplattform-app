@@ -1,99 +1,222 @@
 import "./App.css"
 import { useEffect, useState } from "react"
+import { useNavigate } from 'react-router-dom'
+import { createRoot } from "react-dom/client";
+
 import {
   Button,
   EditableText,
   InputGroup,
-  OverlayToaster,
-  Position,
+  OverlayToaster,  
 } from "@blueprintjs/core"
 
-const AppToaster = OverlayToaster.create({
-  position: Position.TOP,
-})
+const AppToaster = await OverlayToaster.createAsync({ position: "top" }, {
+  domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),
+});
 
-function RestApi() {
-  const [users, setUsers] = useState([])
+const RestApi = (props) =>  {
+  const [exams, setExams] = useState([])
   const [newName, setNewName] = useState("")
-  const [newEmail, setNewEmail] = useState("")
-  const [newWebsite, setNewWebsite] = useState("")
+  const [newInfo, setNewInfo] = useState("")
+  const [newBeschreibung, setNewBeschreibung] = useState("")
+  const [user, setUser] = useState([]);
+  const navigate = useNavigate()
 
   useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/users")
-      .then(response => response.json())
-      .then(json => setUsers(json))
-  }, [])
+    
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
 
-  const addUser = () => {
-    const name = newName.trim()
-    const email = newEmail.trim()
-    const website = newWebsite.trim()
-    if (name && email && website) {
-      fetch("https://jsonplaceholder.typicode.com/users", {
+      const fetchExams = async () => {
+        try {
+          const response = await fetch("http://localhost:7634/exam", {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${parsedUser.token}`,
+              'Content-Type': 'application/json'
+            },
+          });
+
+          if (!response.ok) {
+            if (response.status === 403) {
+              props.setLoggedIn(false);
+              window.alert('Forbidden: You do not have permission to access this resource.');              
+              navigate('/login');
+              return;
+            }
+            window.alert('Network response was not ok: ' + response.statusText);
+            return;
+          }
+
+          const json = await response.json();
+          setExams(json);
+        } catch (error) {
+          console.error('There was a problem with the fetch operation:', error);
+          window.alert('An error occurred while fetching the exams. Please try again later.');
+        }
+      };
+
+      fetchExams();
+    }
+  }, [navigate, props]);
+  const addExam = () => {
+    const pruefungsName = newName.trim()
+    const info = newInfo.trim()
+    const beschreibung = newBeschreibung.trim()
+
+    if (pruefungsName && info && beschreibung) {
+      fetch("http://localhost:7634/exam", {
         method: "POST",
-        body: JSON.stringify({
-          name,
-          email,
-          website,
-        }),
         headers: {
-          "Content-type": "application/json; charset=UTF-8",
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
         },
+        body: JSON.stringify({
+          pruefungsName,
+          info,
+          beschreibung,
+        })
       })
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            if (response.status === 403) {
+              props.setLoggedIn(false);
+              window.alert('Forbidden: You do not have permission to access this resource.');
+              navigate('/login');
+              return;
+            }
+            window.alert('Network response was not ok: ' + response.statusText);
+            return;
+          }
+          return response.json();
+        })
         .then(data => {
-          setUsers([...users, data])
-          setNewName("")
-          setNewEmail("")
-          setNewWebsite("")
+          if (data) {
+            setExams([...exams, data])
+            setNewName("")
+            setNewInfo("")
+            setNewBeschreibung("")
+            AppToaster.show({
+              message: "Exam added successfully",
+              intent: "success",
+              timeout: 3000,
+            })
+          }
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
           AppToaster.show({
-            message: "User added successfully",
+            message: "Failed to add exam: " + error.message,
+            intent: "danger",
+            timeout: 3000,
+          });
+        });
+    } else {
+      AppToaster.show({
+        message: "All fields are required",
+        intent: "warning",
+        timeout: 3000,
+      });
+    }
+  };
+
+  const updateExam = id => {
+    const exam = exams.find(exam => exam.id === id);
+
+    if (!exam) {
+      AppToaster.show({
+        message: "Exam not found",
+        intent: "warning",
+        timeout: 3000,
+      });
+      return;
+    }
+
+    fetch(`http://localhost:7634/exam/${id}`, {
+      method: "PUT",
+      headers: {
+        'Authorization': `Bearer ${user.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(exam),
+    })
+      .then(response => {
+        if (!response.ok) {
+          if (response.status === 403) {
+            props.setLoggedIn(false);
+            window.alert('Forbidden: You do not have permission to access this resource.');
+            navigate('/login');
+            return;  // Stop the execution of further then/catch blocks
+          }
+          window.alert('Network response was not ok: ' + response.statusText);
+          return;  // Stop the execution of further then/catch blocks
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data) {  // Ensure that we proceed only if there's valid data returned from the previous then block
+          AppToaster.show({
+            message: "Exam updated successfully",
             intent: "success",
             timeout: 3000,
-          })
-        })
+          });
+        }
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+        AppToaster.show({
+          message: "Failed to update exam: " + error.message,
+          intent: "danger",
+          timeout: 3000,
+        });
+      });
+  };
+
+
+  const deleteExam = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:7634/exam/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          props.setLoggedIn(false);
+          window.alert('Forbidden: You do not have permission to access this resource.');
+          navigate('/login');
+          return;
+        }
+        window.alert('Network response was not ok: ' + response.statusText);
+        return;
+      }
+
+      // Prüfen Sie, ob die Antwort einen Inhalt hat, bevor Sie sie parsen
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+
+      setExams(values => values.filter(item => item.id !== id));
+      if (data) {
+        AppToaster.show({
+          message: 'User deleted successfully',
+          intent: 'success',
+          timeout: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('There was a problem with the fetch operation:', error);
+      window.alert('An error occurred while deleting the exam. Please try again later.');
     }
-  }
+  };
 
-  const updateUser = id => {
-    const user = users.find(user => user.id === id)
-
-    fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(user),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    })
-      .then(response => response.json())
-      .then(() => {
-        AppToaster.show({
-          message: "User updated successfully",
-          intent: "success",
-          timeout: 3000,
-        })
-      })
-  }
-
-  const deleteUser = id => {
-    fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
-      method: "DELETE",
-    })
-      .then(response => response.json())
-      .then(() => {
-        setUsers(values => {
-          return values.filter(item => item.id !== id)
-        })
-        AppToaster.show({
-          message: "User deleted successfully",
-          intent: "success",
-          timeout: 3000,
-        })
-      })
-  }
 
   const onChangeHandler = (id, key, value) => {
-    setUsers(values => {
+    setExams(values => {
       return values.map(item =>
         item.id === id ? { ...item, [key]: value } : item
       )
@@ -106,41 +229,55 @@ function RestApi() {
         <thead>
           <tr>
             <th>Id</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Website</th>
+            <th>Prüfungsname</th>
+            <th>Prüfungsinfo</th>
+            <th>Prüfungsbeschreibung</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {users.map(user => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>{user.name}</td>
-              <td>
-                <EditableText
-                  value={user.email}
-                  onChange={value => onChangeHandler(user.id, "email", value)}
-                />
-              </td>
-              <td>
-                <EditableText
-                  value={user.website}
-                  onChange={value => onChangeHandler(user.id, "website", value)}
-                />
-              </td>
-              <td>
-                <Button intent="primary" onClick={() => updateUser(user.id)}>
-                  Update
-                </Button>
-                &nbsp;
-                <Button intent="danger" onClick={() => deleteUser(user.id)}>
-                  Delete
-                </Button>
-              </td>
+          {exams && exams.length > 0 ? (
+            exams.map(exam => (
+              exam ? (
+                <tr key={exam.id}>
+                  <td>{exam.id}</td>
+                  <td>
+                    <EditableText
+                      value={exam.pruefungsName}
+                      onChange={value => onChangeHandler(exam.id, "pruefungsName", value)}
+                    />
+                  </td>
+                  <td>
+                    <EditableText
+                      value={exam.info}
+                      onChange={value => onChangeHandler(exam.id, "info", value)}
+                    />
+                  </td>
+                  <td>
+                    <EditableText
+                      value={exam.beschreibung}
+                      onChange={value => onChangeHandler(exam.id, "beschreibung", value)}
+                    />
+                  </td>
+                  <td>
+                    <Button intent="primary" onClick={() => updateExam(exam.id)}>
+                      Update
+                    </Button>
+                    &nbsp;
+                    <Button intent="danger" onClick={() => deleteExam(exam.id)}>
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ) : null
+            ))
+          ) : (
+            <tr>
+              <td colSpan="5">No exams available</td>
             </tr>
-          ))}
+          )}
         </tbody>
+
         <tfoot>
           <tr>
             <td></td>
@@ -148,26 +285,26 @@ function RestApi() {
               <InputGroup
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                placeholder="Add name here..."
+                placeholder="Prüfungsname hier eingeben..."
               />
             </td>
             <td>
               <InputGroup
-                placeholder="Add email here..."
-                value={newEmail}
-                onChange={e => setNewEmail(e.target.value)}
+                placeholder="Prüfungsinfo hier eingeben..."
+                value={newInfo}
+                onChange={e => setNewInfo(e.target.value)}
               />
             </td>
             <td>
               <InputGroup
-                placeholder="Add website here..."
-                value={newWebsite}
-                onChange={e => setNewWebsite(e.target.value)}
+                placeholder="Prüfungsbeschreibung hier eingeben..."
+                value={newBeschreibung}
+                onChange={e => setNewBeschreibung(e.target.value)}
               />
             </td>
             <td>
-              <Button intent="success" onClick={addUser}>
-                Add user
+              <Button intent="success" onClick={addExam}>
+                Add Exam
               </Button>
             </td>
           </tr>

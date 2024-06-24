@@ -19,10 +19,11 @@ const Login = (props) => {
       return
     }
 
-    if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-      setEmailError('Please enter a valid email')
-      return
+    if (!/^[\w.-]+@[\w-]+\.[\w-]{2,4}$/.test(email)) {
+      setEmailError('Please enter a valid email');
+      return;
     }
+    
 
     if ('' === password) {
       setPasswordError('Please enter a password')
@@ -124,6 +125,7 @@ const Login = (props) => {
       <br />
       <div className={'inputContainer'}>
         <input
+          type="password"
           value={password}
           placeholder="Enter your password here"
           onChange={(ev) => setPassword(ev.target.value)}
