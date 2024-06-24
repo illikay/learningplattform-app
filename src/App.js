@@ -2,12 +2,13 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Home from './Home'
 import Login from './Login'
 import RestApi from './RestApi'
+import RestApiQuestion from './RestApiQuestion'
 import './App.css'
 import { useEffect, useState } from 'react'
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState('')  
 
   useEffect(() => {
     // Fetch the user email and token from local storage
@@ -55,6 +56,7 @@ function App() {
           <Route path="/" element={<Home email={email} loggedIn={loggedIn} setLoggedIn={setLoggedIn} />} />
           <Route path="/login" element={<Login setLoggedIn={setLoggedIn} setEmail={setEmail} />} />
           <Route path="/restapi" element={<RestApi setLoggedIn={setLoggedIn} setEmail={setEmail} />} />
+          <Route path="/restapiquestion/:examId" element={<RestApiQuestion setLoggedIn={setLoggedIn} setEmail={setEmail} />} />
         </Routes>
       </BrowserRouter>
     </div>

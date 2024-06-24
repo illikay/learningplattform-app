@@ -24,6 +24,7 @@ const RestApi = (props) =>  {
 
   useEffect(() => {
     
+    
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -203,7 +204,7 @@ const RestApi = (props) =>  {
       setExams(values => values.filter(item => item.id !== id));
       if (data) {
         AppToaster.show({
-          message: 'User deleted successfully',
+          message: 'Exam deleted successfully',
           intent: 'success',
           timeout: 3000,
         });
@@ -266,6 +267,12 @@ const RestApi = (props) =>  {
                     &nbsp;
                     <Button intent="danger" onClick={() => deleteExam(exam.id)}>
                       Delete
+                    </Button>
+                    <Button intent="primary" onClick={() => {
+                      localStorage.setItem('examId', JSON.stringify({ examId: exam.id }));
+                      navigate(`/restapiquestion/${exam.id}`)
+                      }}>
+                      Add Questions
                     </Button>
                   </td>
                 </tr>
