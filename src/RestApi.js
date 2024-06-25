@@ -2,6 +2,7 @@ import "./App.css"
 import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import { createRoot } from "react-dom/client";
+import DateDisplay from "./DateDisplay";
 
 import {
   Button,
@@ -18,7 +19,7 @@ const RestApi = (props) =>  {
   const [exams, setExams] = useState([])
   const [newName, setNewName] = useState("")
   const [newInfo, setNewInfo] = useState("")
-  const [newBeschreibung, setNewBeschreibung] = useState("")
+  const [newBeschreibung, setNewBeschreibung] = useState("")  
   const [user, setUser] = useState([]);
   const navigate = useNavigate()
 
@@ -52,7 +53,7 @@ const RestApi = (props) =>  {
           }
 
           const json = await response.json();
-          setExams(json);
+          setExams(json);         
         } catch (error) {
           console.error('There was a problem with the fetch operation:', error);
           window.alert('An error occurred while fetching the exams. Please try again later.');
@@ -163,6 +164,10 @@ const RestApi = (props) =>  {
             intent: "success",
             timeout: 3000,
           });
+          const updatedExams = exams.map(exam =>
+            exam.id === data.id ? { ...exam, ...data } : exam
+          );
+          setExams(updatedExams);
         }
       })
       .catch(error => {
@@ -233,6 +238,8 @@ const RestApi = (props) =>  {
             <th>Prüfungsname</th>
             <th>Prüfungsinfo</th>
             <th>Prüfungsbeschreibung</th>
+            <th>Erstelldatum</th>
+            <th>Änderungsdatum</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -260,6 +267,8 @@ const RestApi = (props) =>  {
                       onChange={value => onChangeHandler(exam.id, "beschreibung", value)}
                     />
                   </td>
+                  <td><DateDisplay utcDateTime={exam.erstellDatum} /></td>
+                  <td><DateDisplay utcDateTime={exam.aenderungsDatum} /></td>                 
                   <td>
                     <Button intent="primary" onClick={() => updateExam(exam.id)}>
                       Update
