@@ -277,8 +277,7 @@ const RestApi = (props) =>  {
                     <Button intent="danger" onClick={() => deleteExam(exam.id)}>
                       Delete
                     </Button>
-                    <Button intent="primary" onClick={() => {
-                      localStorage.setItem('examId', JSON.stringify({ examId: exam.id }));
+                    <Button intent="primary" onClick={() => {                      
                       navigate(`/restapiquestion/${exam.id}`)
                       }}>
                       Add Questions

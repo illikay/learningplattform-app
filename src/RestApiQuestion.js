@@ -1,6 +1,6 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { createRoot } from "react-dom/client";
 import { Button, EditableText, InputGroup, OverlayToaster } from "@blueprintjs/core";
 
@@ -13,16 +13,11 @@ const RestAPIQuestion = (props) => {
     const [newQuestionFrage, setQuestionFrage] = useState("");
     const [newQuestionHinweis, setQuestionHinweis] = useState("");
     const [newQuestionLoesung, setQuestionLoesung] = useState("");
-    const [token, setToken] = useState("");
-    const [newExamId, setExamId] = useState(null);
+    const [token, setToken] = useState("");    
     const navigate = useNavigate();
+    let { examId } = useParams();
 
-    useEffect(() => {
-        const storedExamid = localStorage.getItem('examId');
-        if (storedExamid) {
-            const parsedExamId = JSON.parse(storedExamid);
-            setExamId(parsedExamId.examId);
-        }
+    useEffect(() => {       
 
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -33,12 +28,10 @@ const RestAPIQuestion = (props) => {
 
     useEffect(() => {
         const fetchQuestions = async () => {
-            if (newExamId && token) {  // Check if both newExamId and user are set
-                console.log("Übertragene ExamId", newExamId);
-                console.log("Übertragener Token", token);
+            if (examId && token) {                 
 
                 try {
-                    const response = await fetch(`http://localhost:7634/exam/${newExamId}/questions`, {
+                    const response = await fetch(`http://localhost:7634/exam/${examId}/questions`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -57,8 +50,7 @@ const RestAPIQuestion = (props) => {
                         return;
                     }
 
-                    const json = await response.json();
-                    console.log(json);
+                    const json = await response.json();                    
                     setQuestions(json);
                 } catch (error) {
                     console.error('There was a problem with the fetch operation:', error);
@@ -68,7 +60,7 @@ const RestAPIQuestion = (props) => {
         };
 
         fetchQuestions();
-    }, [navigate, props, newExamId, token]);
+    }, [navigate, props, examId, token]);
 
     const addQuestion = () => {
         const questionFrage = newQuestionFrage.trim();
@@ -76,7 +68,7 @@ const RestAPIQuestion = (props) => {
         const questionLoesung = newQuestionLoesung.trim();
 
         if (questionFrage && questionHinweis && questionLoesung) {
-            fetch(`http://localhost:7634/exam/${newExamId}/questions`, {
+            fetch(`http://localhost:7634/exam/${examId}/questions`, {
                 method: "POST",
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -143,7 +135,7 @@ const RestAPIQuestion = (props) => {
             return;
         }
 
-        fetch(`http://localhost:7634/exam/${newExamId}/questions/${id}`, {
+        fetch(`http://localhost:7634/exam/${examId}/questions/${id}`, {
             method: "PUT",
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -185,7 +177,7 @@ const RestAPIQuestion = (props) => {
 
     const deleteQuestion = async (id) => {
         try {
-            const response = await fetch(`http://localhost:7634/exam/${newExamId}/questions/${id}`, {
+            const response = await fetch(`http://localhost:7634/exam/${examId}/questions/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
