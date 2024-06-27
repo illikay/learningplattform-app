@@ -240,6 +240,7 @@ const RestApi = (props) =>  {
             <th>Prüfungsbeschreibung</th>
             <th>Erstelldatum</th>
             <th>Änderungsdatum</th>
+            <th>Anzahl erstellter Fragen</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -268,19 +269,21 @@ const RestApi = (props) =>  {
                     />
                   </td>
                   <td><DateDisplay utcDateTime={exam.erstellDatum} /></td>
-                  <td><DateDisplay utcDateTime={exam.aenderungsDatum} /></td>                 
+                  <td><DateDisplay utcDateTime={exam.aenderungsDatum} /></td>
+                  <td>{exam.anzahlFragen}</td>                  
                   <td>
                     <Button intent="primary" onClick={() => updateExam(exam.id)}>
-                      Update
+                      Updaten
                     </Button>
                     &nbsp;
                     <Button intent="danger" onClick={() => deleteExam(exam.id)}>
-                      Delete
+                      Löschen
                     </Button>
+                    &nbsp;
                     <Button intent="primary" onClick={() => {                      
                       navigate(`/restapiquestion/${exam.id}`)
                       }}>
-                      Add Questions
+                      Fragenliste
                     </Button>
                   </td>
                 </tr>
@@ -288,7 +291,7 @@ const RestApi = (props) =>  {
             ))
           ) : (
             <tr>
-              <td colSpan="5">No exams available</td>
+              <td colSpan="5">Keine Prüfung verfügbar</td>
             </tr>
           )}
         </tbody>

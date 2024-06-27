@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import { createRoot } from "react-dom/client";
 import { Button, EditableText, InputGroup, OverlayToaster } from "@blueprintjs/core";
+import DateDisplay from "./DateDisplay";
+import StatusIcon from './StatusIcon';
 
 const AppToaster = await OverlayToaster.createAsync({ position: "top" }, {
     domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),
@@ -67,7 +69,7 @@ const RestAPIQuestion = (props) => {
         const questionHinweis = newQuestionHinweis.trim();
         const questionLoesung = newQuestionLoesung.trim();
 
-        if (questionFrage && questionHinweis && questionLoesung) {
+        if (questionFrage && questionHinweis ) {
             fetch(`http://localhost:7634/exam/${examId}/questions`, {
                 method: "POST",
                 headers: {
@@ -163,6 +165,10 @@ const RestAPIQuestion = (props) => {
                         intent: "success",
                         timeout: 3000,
                     });
+                    const updatedQuestions = questions.map(question =>
+                        question.id === data.id ? { ...question, ...data } : question
+                      );
+                      setQuestions(updatedQuestions);
                 }
             })
             .catch(error => {
@@ -231,6 +237,9 @@ const RestAPIQuestion = (props) => {
                         <th>Frage</th>
                         <th>Hinweis</th>
                         <th>Lösung</th>
+                        <th>Erstelldatum</th>
+                        <th>Änderungsdatum</th>
+                        <th>Frage beantwortet</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -258,6 +267,9 @@ const RestAPIQuestion = (props) => {
                                             onChange={value => onChangeHandler(question.id, "questionLoesung", value)}
                                         />
                                     </td>
+                                    <td><DateDisplay utcDateTime={question.erstellDatum} /></td>
+                                    <td><DateDisplay utcDateTime={question.aenderungsDatum} /></td>
+                                    <td><StatusIcon isBeantwortet={question.beantwortet} /></td>
                                     <td>
                                         <Button intent="primary" onClick={() => updateQuestion(question.id)}>
                                             Update
@@ -272,7 +284,7 @@ const RestAPIQuestion = (props) => {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="5">No questions available</td>
+                            <td colSpan="5">Keine Fragen verfügbar.</td>
                         </tr>
                     )}
                 </tbody>
