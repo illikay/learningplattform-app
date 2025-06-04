@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom'
 import { createRoot } from "react-dom/client";
 import DateDisplay from "./DateDisplay";
+import { API_BASE_URL } from './config'
 
 import {
   Button,
@@ -33,7 +34,7 @@ const RestApi = (props) =>  {
 
       const fetchExams = async () => {
         try {
-          const response = await fetch("http://localhost:7634/exam", {
+          const response = await fetch(`${API_BASE_URL}/exam`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${parsedUser.token}`,
@@ -69,7 +70,7 @@ const RestApi = (props) =>  {
     const beschreibung = newBeschreibung.trim()
 
     if (pruefungsName && info && beschreibung) {
-      fetch("http://localhost:7634/exam", {
+      fetch(`${API_BASE_URL}/exam`, {
         method: "POST",
         headers: {
           'Authorization': `Bearer ${user.token}`,
@@ -136,7 +137,7 @@ const RestApi = (props) =>  {
       return;
     }
 
-    fetch(`http://localhost:7634/exam/${id}`, {
+    fetch(`${API_BASE_URL}/exam/${id}`, {
       method: "PUT",
       headers: {
         'Authorization': `Bearer ${user.token}`,
@@ -183,7 +184,7 @@ const RestApi = (props) =>  {
 
   const deleteExam = async (id) => {
     try {
-      const response = await fetch(`http://localhost:7634/exam/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/exam/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user.token}`,

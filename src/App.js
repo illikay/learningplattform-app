@@ -5,6 +5,7 @@ import RestApi from './RestApi'
 import RestApiQuestion from './RestApiQuestion'
 import './App.css'
 import { useEffect, useState } from 'react'
+import { API_BASE_URL } from './config'
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
@@ -21,7 +22,7 @@ function App() {
     }
     const verifyUser = async () => {
       try {
-        const response = await fetch('http://localhost:7634/usermanagement/verify', {
+        const response = await fetch(`${API_BASE_URL}/usermanagement/verify`, {
           method: 'POST',
           headers: {
             'Authorization': user.token,
@@ -47,6 +48,7 @@ function App() {
         console.error('There was a problem with the fetch operation:', error);
       }
     };
+    verifyUser();
   }, []);
 
   return (
