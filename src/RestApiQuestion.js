@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { Button, EditableText, InputGroup, OverlayToaster } from "@blueprintjs/core";
 import DateDisplay from "./DateDisplay";
 import StatusIcon from './StatusIcon';
+import { API_BASE_URL } from './config'
 
 const AppToaster = await OverlayToaster.createAsync({ position: "top" }, {
     domRenderer: (toaster, containerElement) => createRoot(containerElement).render(toaster),
@@ -33,7 +34,7 @@ const RestAPIQuestion = (props) => {
             if (examId && token) {                 
 
                 try {
-                    const response = await fetch(`http://localhost:7634/exam/${examId}/questions`, {
+                    const response = await fetch(`${API_BASE_URL}/exam/${examId}/questions`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -70,7 +71,7 @@ const RestAPIQuestion = (props) => {
         const questionLoesung = newQuestionLoesung.trim();
 
         if (questionFrage && questionHinweis ) {
-            fetch(`http://localhost:7634/exam/${examId}/questions`, {
+            fetch(`${API_BASE_URL}/exam/${examId}/questions`, {
                 method: "POST",
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -137,7 +138,7 @@ const RestAPIQuestion = (props) => {
             return;
         }
 
-        fetch(`http://localhost:7634/exam/${examId}/questions/${id}`, {
+        fetch(`${API_BASE_URL}/exam/${examId}/questions/${id}`, {
             method: "PUT",
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -183,7 +184,7 @@ const RestAPIQuestion = (props) => {
 
     const deleteQuestion = async (id) => {
         try {
-            const response = await fetch(`http://localhost:7634/exam/${examId}/questions/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/exam/${examId}/questions/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -325,3 +326,4 @@ const RestAPIQuestion = (props) => {
 };
 
 export default RestAPIQuestion;
+

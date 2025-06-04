@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from './config'
 
 const Login = (props) => {
   const [email, setEmail] = useState('')
@@ -30,7 +31,7 @@ const Login = (props) => {
       return
     }
 
-    if (password.length < 7) {
+    if (password.length < 8) {
       setPasswordError('The password must be 8 characters or longer')
       return
     }
@@ -52,7 +53,7 @@ const Login = (props) => {
 
   // Call the server API to check if the given email ID already exists
   const checkAccountExists = (callback) => {
-    fetch('http://localhost:7634/usermanagement/check-account', {
+    fetch(`${API_BASE_URL}/usermanagement/check-account`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -72,7 +73,7 @@ const Login = (props) => {
   // Log in a user using email and password
   const logIn = async () => {
     try {
-      const response = await fetch('http://localhost:7634/usermanagement/authenticate', {
+      const response = await fetch(`${API_BASE_URL}/usermanagement/authenticate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
